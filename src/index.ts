@@ -1,4 +1,4 @@
-import { Plugin } from "esbuild";
+import type { Plugin, ImportKind } from "esbuild";
 import { Plugin as PostCSSPlugin } from "postcss";
 import {
   ensureDir,
@@ -89,7 +89,10 @@ const postCSSPlugin = ({
 
         const sourceExt = path.extname(sourceFullPath);
         const sourceBaseName = path.basename(sourceFullPath, sourceExt);
-        const isModule = sourceBaseName.match(/\.module$/);
+        const isModule = ([
+          "import-rule",
+          "require-call"
+        ] as readonly ImportKind[]).includes(args.kind);
         const sourceDir = path.dirname(sourceFullPath);
 
         let tmpFilePath: string;
