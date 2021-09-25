@@ -79,6 +79,11 @@ const postCSSPlugin = ({
     build.onResolve(
       { filter: /.\.(css|sass|scss|less|styl)$/ },
       async (args) => {
+        // TODO: Do this properly
+        args.path = args.path.startsWith("~")
+          ? args.path.replace("~", "src")
+          : args.path;
+
         // Namespace is empty when using CSS as an entrypoint
         if (args.namespace !== "file" && args.namespace !== "") return;
 
@@ -89,10 +94,13 @@ const postCSSPlugin = ({
 
         const sourceExt = path.extname(sourceFullPath);
         const sourceBaseName = path.basename(sourceFullPath, sourceExt);
-        const isModule = ([
-          "import-rule",
-          "require-call"
-        ] as readonly ImportKind[]).includes(args.kind);
+        const moduleKinds: readonly ImportKind[] = [
+          "import-statement",
+          "require-call",
+          "require-resolve",
+          "dynamic-import"
+        ];
+        const isModule = moduleKinds.includes(args.kind);
         const sourceDir = path.dirname(sourceFullPath);
 
         let tmpFilePath: string;
@@ -148,7 +156,7 @@ const postCSSPlugin = ({
 
         // wait for plugins to complete parsing & get result
         const result = await postcss(
-          isModule ? [modulesPlugin, ...plugins] : plugins
+          isModule ? [...plugins, modulesPlugin] : plugins
         ).process(css, {
           from: sourceFullPath,
           to: tmpFilePath
