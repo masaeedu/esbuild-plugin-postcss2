@@ -10,6 +10,7 @@
     "access": "public"
   },
   "scripts": {
+    "prepack": "yarn build",
     "build": "cross-env NODE_ENV=production node build.js",
     "dev": "cross-env NODE_ENV=development node build.js",
     "test": "yarn build && cd test && mocha 'index.js' --no-timeout --exit",
